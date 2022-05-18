@@ -10,6 +10,7 @@ numpy = "^1.22.3"
 scipy = "^1.8.0"
 matplotlib = "^3.5.2"
 jupyter = "^1.0.0"
+jupytext = "^1.13.8"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"
