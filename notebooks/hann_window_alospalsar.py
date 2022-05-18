@@ -151,10 +151,10 @@ slc_fft_filtered = slc_fft * hann_window[None, :]
 # %%
 fig, ax = plt.subplots(1, 1, figsize=(scale, scale * n_lines / n_fft))
 
-slc_fft_dB = 20 * np.log10(np.abs(slc_fft), where=(slc_fft != 0))
+slc_fft_filtered_dB = 20 * np.log10(np.abs(slc_fft_filtered), where=(slc_fft != 0))
 
 img = ax.imshow(
-    slc_fft_dB,
+    slc_fft_filtered_dB,
     origin="lower",
     cmap="Greys_r",
     vmin=30,
