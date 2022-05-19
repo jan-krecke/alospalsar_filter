@@ -108,7 +108,7 @@ img = ax.imshow(
     vmin=80,
     vmax=150,
     aspect="auto",
-    extent=[-0.5,0.5,0,n_lines],
+    extent=[-0.5, 0.5, 0, n_lines],
 )
 
 ax.set_ylabel("Lines")
@@ -128,13 +128,13 @@ fig, ax = plt.subplots(1, 1, figsize=(scale * 1, scale * 1))
 index_sample_line = 1000
 
 freq = np.linspace(-0.5, 0.5, n_fft)
-ax.plot(freq, slc_fft_dB[index_sample_line,:])
+ax.plot(freq, slc_fft_dB[index_sample_line, :])
 ax.grid(True)
 
 ax.set_xlabel("Normalized Frequency")
 ax.set_ylabel("Intensity in dB")
 
-plt.xticks(np.arange(-0.5, 0.6, 0.1));
+plt.xticks(np.arange(-0.5, 0.6, 0.1))
 
 # %% [markdown]
 # ## 3.2 Apply the Hanning window to the central part of the frequency spectrum
@@ -163,7 +163,7 @@ ax.grid(True)
 ax.set_xlabel("Sample Index")
 ax.set_ylabel("Value")
 
-plt.xticks(np.arange(0, n_fft, 2000));
+plt.xticks(np.arange(0, n_fft, 2000))
 
 # %% [markdown]
 # Apply Hann-window to the range spectra
@@ -177,7 +177,9 @@ slc_fft_filtered = slc_fft * hann_window[None, :]
 # %%
 fig, ax = plt.subplots(1, 1, figsize=(scale, scale * n_lines / n_fft))
 
-slc_fft_filtered_dB = 20 * np.log10(np.abs(slc_fft_filtered), where=(slc_fft_filtered != 0))
+slc_fft_filtered_dB = 20 * np.log10(
+    np.abs(slc_fft_filtered), where=(slc_fft_filtered != 0)
+)
 
 img = ax.imshow(
     slc_fft_filtered_dB,
@@ -186,7 +188,7 @@ img = ax.imshow(
     vmin=30,
     vmax=160,
     aspect="auto",
-    extent=[-0.5,0.5,0,n_lines],
+    extent=[-0.5, 0.5, 0, n_lines],
 )
 
 ax.set_ylabel("Lines")
@@ -205,13 +207,13 @@ fig, ax = plt.subplots(1, 1, figsize=(scale * 1, scale * 1))
 
 index_sample_line = 1000
 
-ax.plot(slc_fft_filtered_dB[index_sample_line,:])
+ax.plot(slc_fft_filtered_dB[index_sample_line, :])
 ax.grid(True)
 
 ax.set_xlabel("Frequency Index")
 ax.set_ylabel("Value in dB")
 
-plt.xticks(np.arange(0, n_fft, 2000));
+plt.xticks(np.arange(0, n_fft, 2000))
 
 # %% [markdown]
 # ## 3.3 Compute Inverser Fourier Transform
