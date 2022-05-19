@@ -35,3 +35,7 @@ I wrote a notebook to visualize an ALOS-PALSAR L1.1 dataset, and to demonstrate 
     ```
 
 5. Inside Jupyter, navigate into the directory `notebooks` and open the notebook `hann_window_alospalsar.ipynb`. Execute the code cells and follow the instructions in the markdown cells.
+
+## NOTE
+
+Inside the notebook containing the main code, a lot of arrays are created for the purpose of visualization and interaction. This is not ideal, of course, as the because each takes up a lot of memory. I didn't mind that, because I have 128GB of RAM at my disposal. Should there be any problems running the notebook due to memory issues, please let me know, and I can make adjustments for the code to be a bit resource friendlier.
