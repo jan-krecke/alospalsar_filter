@@ -18,6 +18,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib.patches as patches
 import numpy as np
 from scipy.signal import windows
 
@@ -60,9 +61,7 @@ slc_intensity_dB = 20 * np.log10(np.abs(slc))
 # Visualize intensity image.
 
 # %%
-scale = 10
-
-fig, ax = plt.subplots(1, 1, figsize=(scale, scale * n_lines / n_pixels))
+fig, ax = plt.subplots(1, 1, figsize=(30,20))
 
 img = ax.imshow(
     slc_intensity_dB,
@@ -70,16 +69,63 @@ img = ax.imshow(
     vmin=80,
     vmax=120,
     cmap="Greys_r",
-    aspect="auto",
+    aspect="equal",
+    extent=(0,n_pixels,0,n_lines)
 )
+
+line_min = 13600
+line_max = 14700
+pixel_min = 7500
+pixel_max = 8050
+rect = patches.Rectangle((pixel_min, line_min), 
+                         pixel_max-pixel_min,
+                         line_max-line_min,
+                         linewidth=1, 
+                         edgecolor='r', 
+                         facecolor='none',
+                        )
+ax.add_patch(rect)
 
 ax.set_ylabel("Lines")
 ax.set_xlabel("Pixels")
+ax.set_title("Original PALSAR Image")
 
 divider = make_axes_locatable(ax)
 cax = divider.append_axes("right", size="5%", pad=0.05)
 
 plt.colorbar(img, cax=cax, label="Intensity in dB")
+
+# %% [markdown]
+# The scene is quite large, and this visualization does not allow to see many details. Therefore, let's look at a subset of the data set. Specifically, we will look at the area around the Matsuyama Seaport and Aiport (highlighted in red in the figure above).
+
+# %%
+extent = (pixel_min, pixel_max, line_min, line_max)
+
+fig, ax = plt.subplots(1, 1, figsize=(30,20))
+
+img = ax.imshow(
+    slc_intensity_dB[line_min:line_max, pixel_min:pixel_max],
+    origin="lower",
+    vmin=80,
+    vmax=120,
+    cmap="Greys_r",
+    aspect="equal",
+    extent=extent,
+)
+
+ax.set_ylabel("Lines")
+ax.set_xlabel("Pixels")
+ax.set_title("Matsuyama Harbour in Original PALSAR Image")
+
+divider = make_axes_locatable(ax)
+cax = divider.append_axes("right", size="5%", pad=0.05)
+
+plt.colorbar(img, cax=cax, label="Intensity in dB")
+
+# %% [markdown]
+# In this image, it can be seen that the sidelobes caused by the Point Spread Function (PSF) in range are quite strong. This effect is particularly strong in the densely urbanized area around the harbour due to the high concentration of strong, point-like scatterers in that region.
+#
+# To attenuate or even remove the sidelobes, we need to apply a filter in the frequency domain.
 
 # %% [markdown]
 # # 3. Implement frequency based windowing
@@ -88,36 +134,11 @@ plt.colorbar(img, cax=cax, label="Intensity in dB")
 # ## 3.1 For each line, compute the Fourier transform with a size of 16384
 
 # %% [markdown]
-# Numpy's fft function offers the possibility to compute the FFT for all lines at once (`axis=1`)
+# Numpy's fft function offers the possibility to compute the FFT for all lines at once (`axis=1`). We use $n_\text{FFT}=16384$ samples for the FFT---a power of 2---to make full use of the Radix2 algorithm.
 
 # %%
 n_fft = 16384
 slc_fft = np.fft.fftshift(np.fft.fft(slc, n=n_fft, axis=1), axes=1)
-
-# %% [markdown]
-# Visualize the line spectra
-
-# %%
-fig, ax = plt.subplots(1, 1, figsize=(scale, scale * n_lines / n_fft))
-
-slc_fft_dB = 20 * np.log10(np.abs(slc_fft))
-img = ax.imshow(
-    slc_fft_dB,
-    origin="lower",
-    cmap="Greys_r",
-    vmin=80,
-    vmax=150,
-    aspect="auto",
-    extent=[-0.5, 0.5, 0, n_lines],
-)
-
-ax.set_ylabel("Lines")
-ax.set_xlabel("Normalized Spatial Frequency")
-
-divider = make_axes_locatable(ax)
-cax = divider.append_axes("right", size="5%", pad=0.05)
-
-plt.colorbar(img, cax=cax, label="Spectrum Intensity in dB")
 
 # %% [markdown]
 # Visualize spectrum of single line
@@ -125,22 +146,34 @@ plt.colorbar(img, cax=cax, label="Spectrum Intensity in dB")
 # %%
 fig, ax = plt.subplots(1, 1, figsize=(scale * 1, scale * 1))
 
-index_sample_line = 1000
+index_sample_line = 6789
 
 freq = np.linspace(-0.5, 0.5, n_fft)
-ax.plot(freq, slc_fft_dB[index_sample_line, :])
+ax.plot(freq, 20*np.log10(np.abs(slc_fft[index_sample_line, :])))
 ax.grid(True)
 
 ax.set_xlabel("Normalized Frequency")
 ax.set_ylabel("Intensity in dB")
+ax.set_title(f"Intensity Spectrum of Range Line {index_sample_line}")
 
-plt.xticks(np.arange(-0.5, 0.6, 0.1))
+plt.xticks(np.arange(-0.5, 0.6, 0.1));
+
+# %% [markdown]
+# It can be seen in this figure that spectrum of the sample line takes up almost the complete sampling bandwidth. This wide bandwidth allow for a high a resolution in the spatial domain (i.e., a narrow peak of the PSF), but also high sidelobes. Hence, reducing the bandwidth and will cause a lower resolution in the spatial domain and lower sidelobes. We are more than willing to tolerate the loss in the resolution, because in the original product the sidelobes are so high that making use of the high range resolution is not possible, anyway. 
 
 # %% [markdown]
 # ## 3.2 Apply the Hanning window to the central part of the frequency spectrum
 
 # %% [markdown]
-# Comput Hann-window using `scipy`
+# The Hanning (or Hann) window is a popular choice for window functions. It is defined as
+#
+# $$
+# w(n)_\text{Hann} = 0.5 - 0.5\cos\bigg(\frac{2\pi n}{M}\bigg)\quad\text{for}\quad 0 \leq n \leq M-1 \:,
+# $$
+#
+# where $n$ is the sample index and $M$ is the number of samples in the signal (in our case, the number of samples used for the FFT).
+#
+# Conveniently, the Hanning-window is implemented in `scipy`. We set its to cover the central portion of the range spectrum.
 
 # %%
 n_hann = int(n_fft / 2)
@@ -163,10 +196,10 @@ ax.grid(True)
 ax.set_xlabel("Sample Index")
 ax.set_ylabel("Value")
 
-plt.xticks(np.arange(0, n_fft, 2000))
+plt.xticks(np.arange(0, n_fft, 2000));
 
 # %% [markdown]
-# Apply Hann-window to the range spectra
+# Apply Hann-window to the range spectra. We use Numpy-broadcasting to apply the window to all range spectra at once.
 
 # %%
 slc_fft_filtered = slc_fft * hann_window[None, :]
@@ -174,56 +207,45 @@ slc_fft_filtered = slc_fft * hann_window[None, :]
 # %% [markdown]
 # Visualize spectra after application of Hann-window
 
-# %%
-fig, ax = plt.subplots(1, 1, figsize=(scale, scale * n_lines / n_fft))
-
-slc_fft_filtered_dB = 20 * np.log10(
-    np.abs(slc_fft_filtered), where=(slc_fft_filtered != 0)
-)
-
-img = ax.imshow(
-    slc_fft_filtered_dB,
-    origin="lower",
-    cmap="Greys_r",
-    vmin=30,
-    vmax=160,
-    aspect="auto",
-    extent=[-0.5, 0.5, 0, n_lines],
-)
-
-ax.set_ylabel("Lines")
-ax.set_xlabel("Normalized Frequency")
-
-divider = make_axes_locatable(ax)
-cax = divider.append_axes("right", size="5%", pad=0.05)
-
-plt.colorbar(img, cax=cax, label="Spectrum Intensity in dB")
-
 # %% [markdown]
 # Visualize single line of filtered spectrum
 
 # %%
 fig, ax = plt.subplots(1, 1, figsize=(scale * 1, scale * 1))
 
-index_sample_line = 1000
+index_sample_line = 6789
 
-ax.plot(slc_fft_filtered_dB[index_sample_line, :])
+freq = np.linspace(-0.5, 0.5, n_fft)
+ax.plot(freq, 
+        20*np.log10(
+            np.abs(slc_fft_filtered[index_sample_line, :]), 
+                   where=(slc_fft_filtered[index_sample_line, :] != 0
+                )
+        )
+       )
 ax.grid(True)
 
-ax.set_xlabel("Frequency Index")
-ax.set_ylabel("Value in dB")
+ax.set_xlabel("Normalized Frequency")
+ax.set_ylabel("Intensity in dB")
+ax.set_title(f"Intensity Spectrum of Range Line {index_sample_line} after applying Hann-window")
 
-plt.xticks(np.arange(0, n_fft, 2000))
+plt.xticks(np.arange(-0.5, 0.6, 0.1));
+
+# %% [markdown]
+# Now the spectrum is a lot more narrow, which should significantly decrease the sidelobe levels in the spatial domain.
 
 # %% [markdown]
 # ## 3.3 Compute Inverser Fourier Transform
 
+# %% [markdown]
+# To verify that the sidelobes have indeed decreased, we transform the range spectra back to the original range lines in the spatial domain.
+
 # %%
 slc_filtered = np.fft.ifft(slc_fft_filtered)
-slc_filtered = slc_filtered[:, :n_pixels]
+slc_filtered = slc_filtered[:, :n_pixels] #Crop filtered image back to original dimensions
 
 # %% [markdown]
-# Visualize filtered image
+# Visualize filtered image (Matsuyama Seaport is shown in red).
 
 # %%
 fig, ax = plt.subplots(1, 1, figsize=(scale, scale * n_lines / n_pixels))
@@ -239,6 +261,15 @@ img = ax.imshow(
     aspect="auto",
 )
 
+rect = patches.Rectangle((pixel_min, line_min), 
+                         pixel_max-pixel_min,
+                         line_max-line_min,
+                         linewidth=1, 
+                         edgecolor='r', 
+                         facecolor='none',
+                        )
+ax.add_patch(rect)
+
 ax.set_ylabel("Lines")
 ax.set_xlabel("Pixels")
 
@@ -250,13 +281,11 @@ plt.colorbar(img, cax=cax, label="Intensity in dB")
 # %% [markdown]
 # # 4. Compare Original and Filtered Image above Matsuyama Airport
 
-# %%
-fig, axes = plt.subplots(1, 2, figsize=(2 * scale, scale))
+# %% [markdown]
+# Let's compare the region around Matsuyama Seaport before and after application of the Hanning-Window. 
 
-line_min = 13600
-line_max = 14700
-pixel_min = 7500
-pixel_max = 8050
+# %%
+fig, axes = plt.subplots(1, 2, figsize=(30, 20))
 
 extent = (pixel_min, pixel_max, line_min, line_max)
 
@@ -267,7 +296,7 @@ img = ax.imshow(
     vmin=80,
     vmax=120,
     cmap="Greys_r",
-    aspect="auto",
+    aspect="equal",
     extent=extent,
 )
 
@@ -287,7 +316,7 @@ img = ax.imshow(
     vmin=80,
     vmax=120,
     cmap="Greys_r",
-    aspect="auto",
+    aspect="equal",
     extent=extent,
 )
 
@@ -300,4 +329,13 @@ cax = divider.append_axes("right", size="5%", pad=0.05)
 
 plt.colorbar(img, cax=cax, label="Intensity in dB")
 
-# %%
+if 1:
+    savedir = Path("../results") 
+    Path(savedir).mkdir(exist_ok=True)
+  
+    file_name = "palsar_hanning_window_comparison.png"
+    savepath = savedir / file_name
+    plt.savefig(savepath, bbox_inches="tight")
+
+# %% [markdown]
+# It can be seen that both the noise level and the PSF sidelobe levels have decreased due to the bandwidth limitation caused by the Hanning-window. Thus, the product is now in much better shape for further processing.
