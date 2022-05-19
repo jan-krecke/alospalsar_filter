@@ -27,7 +27,15 @@ import utils
 # # Applying a Hann-Window to ALOS-PALSAR L1.1 Data
 
 # %% [markdown]
+# The purpose of this notebook is to visualize a single-look complex (SLC) SAR dataset collected by ALOS PALSAR. In addition, the dataset will be filtered in the frequency domain using a Hann-window.
+#
+# The PALSAR product used for this analysis is *ALPSRP139670660*. It can be downloaded using the [ASF Vertex](https://search.asf.alaska.edu/#/) tool.
+
+# %% [markdown]
 # ## 1. Read the complex SLC data
+
+# %% [markdown]
+# First, the dataset has to be read into a Numpy-array. To do that, I use a code snipped provided to me by Synspective (imported here from `utils.py` as `read_alospalsar_image`). The path specified in `product_path` has to be changed according to where the product is.
 
 # %%
 product_path = Path(
@@ -43,7 +51,7 @@ n_pixels = slc.shape[1]
 # # 2. Create an overview image
 
 # %% [markdown]
-# Create logarithmic intensity (power) image.
+# After reading the dataset, we visualize it using its power/ intensity on a logarithmic scale.
 
 # %%
 slc_intensity_dB = 20 * np.log10(np.abs(slc))
@@ -80,7 +88,7 @@ plt.colorbar(img, cax=cax, label="Intensity in dB")
 # ## 3.1 For each line, compute the Fourier transform with a size of 16384
 
 # %% [markdown]
-# Numpy's fft function offers the possibility to compute the FFT for all lines (`axis=1`)
+# Numpy's fft function offers the possibility to compute the FFT for all lines at once (`axis=1`)
 
 # %%
 n_fft = 16384
@@ -97,18 +105,36 @@ img = ax.imshow(
     slc_fft_dB,
     origin="lower",
     cmap="Greys_r",
-    vmin=30,
-    vmax=160,
+    vmin=80,
+    vmax=150,
     aspect="auto",
+    extent=[-0.5,0.5,0,n_lines],
 )
 
 ax.set_ylabel("Lines")
-ax.set_xlabel("Pixels")
+ax.set_xlabel("Normalized Spatial Frequency")
 
 divider = make_axes_locatable(ax)
 cax = divider.append_axes("right", size="5%", pad=0.05)
 
 plt.colorbar(img, cax=cax, label="Spectrum Intensity in dB")
+
+# %% [markdown]
+# Visualize spectrum of single line
+
+# %%
+fig, ax = plt.subplots(1, 1, figsize=(scale * 1, scale * 1))
+
+index_sample_line = 1000
+
+freq = np.linspace(-0.5, 0.5, n_fft)
+ax.plot(freq, slc_fft_dB[index_sample_line,:])
+ax.grid(True)
+
+ax.set_xlabel("Normalized Frequency")
+ax.set_ylabel("Intensity in dB")
+
+plt.xticks(np.arange(-0.5, 0.6, 0.1));
 
 # %% [markdown]
 # ## 3.2 Apply the Hanning window to the central part of the frequency spectrum
@@ -137,7 +163,7 @@ ax.grid(True)
 ax.set_xlabel("Sample Index")
 ax.set_ylabel("Value")
 
-plt.xticks(np.arange(0, n_fft, 2000))
+plt.xticks(np.arange(0, n_fft, 2000));
 
 # %% [markdown]
 # Apply Hann-window to the range spectra
@@ -151,7 +177,7 @@ slc_fft_filtered = slc_fft * hann_window[None, :]
 # %%
 fig, ax = plt.subplots(1, 1, figsize=(scale, scale * n_lines / n_fft))
 
-slc_fft_filtered_dB = 20 * np.log10(np.abs(slc_fft_filtered), where=(slc_fft != 0))
+slc_fft_filtered_dB = 20 * np.log10(np.abs(slc_fft_filtered), where=(slc_fft_filtered != 0))
 
 img = ax.imshow(
     slc_fft_filtered_dB,
@@ -160,15 +186,32 @@ img = ax.imshow(
     vmin=30,
     vmax=160,
     aspect="auto",
+    extent=[-0.5,0.5,0,n_lines],
 )
 
 ax.set_ylabel("Lines")
-ax.set_xlabel("Pixels")
+ax.set_xlabel("Normalized Frequency")
 
 divider = make_axes_locatable(ax)
 cax = divider.append_axes("right", size="5%", pad=0.05)
 
 plt.colorbar(img, cax=cax, label="Spectrum Intensity in dB")
+
+# %% [markdown]
+# Visualize single line of filtered spectrum
+
+# %%
+fig, ax = plt.subplots(1, 1, figsize=(scale * 1, scale * 1))
+
+index_sample_line = 1000
+
+ax.plot(slc_fft_filtered_dB[index_sample_line,:])
+ax.grid(True)
+
+ax.set_xlabel("Frequency Index")
+ax.set_ylabel("Value in dB")
+
+plt.xticks(np.arange(0, n_fft, 2000));
 
 # %% [markdown]
 # ## 3.3 Compute Inverser Fourier Transform
