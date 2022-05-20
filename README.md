@@ -8,6 +8,16 @@ I wrote a notebook to visualize an ALOS-PALSAR L1.1 dataset, and to demonstrate 
 
 ![alos_palsar_filter_demonstration](results/palsar_hanning_window_comparison.png)*Fig. 1: Demonstration of the effect of applying the Hanning window in the range frequency domain. The figure shows the area around Matsuyama airport without (left) and with filtering (right).*
 
+The full scene before and after filtering with the Hanning-window is shown in the following figures.
+
+![alos_palsar_full_scene_no_filter](results/palsar_image_original.png)*Fig. 2: Full PALSAR scene before filtering.*
+
+![alos_palsar_full_scene_filtered](results/palsar_image_filtered.png)*Fig. 3: Full PALSAR scene after filtering.*
+
+The Hanning-window that is used for filtering in the frequency domain is shown in Fig. 4.
+
+![hanning_window](results/hanning_window.png)*Fig. 4: Hanning-window used for filtering in the range frequency domain.*
+
 ## How to Run the Code
 
 1. Use Python3.8+ (I created this code in Python3.8).
