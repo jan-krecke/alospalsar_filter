@@ -1,6 +1,6 @@
 # Filtering an ALOS-PALSAR Dataset with Hanning-Window
 
-This repo contains the code I wrote as part of my application process at Synspective (`Radar_engineer_test_assignment_4.pdf`). All results and some explanations can be found in the notebook `hann_window_alospalsar.ipynb`.
+All results and some explanations can be found in the notebook `hann_window_alospalsar.ipynb`.
 
 ## Summary
 
