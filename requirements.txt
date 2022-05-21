@@ -135,6 +135,9 @@ fastjsonschema==2.15.3; python_version >= "3.7" \
 fonttools==4.33.3; python_version >= "3.7" \
     --hash=sha256:f829c579a8678fa939a1d9e9894d01941db869de44390adb49ce67055a06cc2a \
     --hash=sha256:c0fdcfa8ceebd7c1b2021240bd46ef77aa8e7408cf10434be55df52384865f8e
+importlib-metadata==4.2.0; python_version < "3.8" and python_version >= "3.7" \
+    --hash=sha256:057e92c15bc8d9e8109738a48db0ccb31b4d9d5cfbee5a8670879a30be66304b \
+    --hash=sha256:b7e52a1f8dec14a75ea73e0891f3060099ca1d8e6a462a4dff11c3e119ea1b31
 importlib-resources==5.7.1; python_version < "3.9" and python_version >= "3.7" \
     --hash=sha256:e447dc01619b1e951286f3929be820029d48c75eb25d265c28b92a16548212b8 \
     --hash=sha256:b6062987dfc51f0fcb809187cffbd60f35df7acb4589091f154214af6d0d49d3
@@ -645,6 +648,9 @@ tornado==6.1; python_version >= "3.7" \
 traitlets==5.2.1.post0; python_full_version >= "3.7.0" and python_version >= "3.8" \
     --hash=sha256:f44b708d33d98b0addb40c29d148a761f44af740603a8fd0e2f8b5b27cf0f087 \
     --hash=sha256:70815ecb20ec619d1af28910ade523383be13754283aef90528eb3d47b77c5db
+typing-extensions==4.2.0; python_version < "3.8" and python_version >= "3.7" \
+    --hash=sha256:6657594ee297170d19f67d55c05852a874e7eb634f4f753dbd667855e07c1708 \
+    --hash=sha256:f1c24655a0da0d1b67f07e17a5e6b2a105894e6824b92096378bb3668ef02376
 wcwidth==0.2.5; python_full_version >= "3.6.2" and python_version >= "3.6" \
     --hash=sha256:beb4802a9cebb9144e99086eff703a642a13d6a0052920003a230f3294bbe784 \
     --hash=sha256:c4d647b99872929fdb7bdcaa4fbe7f01413ed3d98077df798530e5b04f116c83
@@ -654,6 +660,6 @@ webencodings==0.5.1; python_version >= "3.7" \
 widgetsnbextension==3.6.0 \
     --hash=sha256:4fd321cad39fdcf8a8e248a657202d42917ada8e8ed5dd3f60f073e0d54ceabd \
     --hash=sha256:e84a7a9fcb9baf3d57106e184a7389a8f8eb935bf741a5eb9d60aa18cc029a80
-zipp==3.8.0; python_version < "3.9" and python_version >= "3.7" \
+zipp==3.8.0; python_version < "3.8" and python_version >= "3.7" \
     --hash=sha256:c4f6e5bbf48e74f7a38e7cc5b0480ff42b0ae5178957d564d18932525d5cf099 \
     --hash=sha256:56bf8aadb83c24db6c4b577e13de374ccfb67da2078beba1d037c17980bf43ad
