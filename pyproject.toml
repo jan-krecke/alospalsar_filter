@@ -5,7 +5,7 @@ description = ""
 authors = ["Jan Krecke"]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.11"
+python = ">=3.7,<3.11"
 numpy = "^1.22.3"
 scipy = "^1.8.0"
 matplotlib = "^3.5.2"
