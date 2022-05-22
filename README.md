@@ -20,7 +20,7 @@ The Hanning-window that is used for filtering in the frequency domain is shown i
 
 ## How to Run the Code
 
-1. Use Python3.8+ (I created this code in Python3.8).
+1. Use Python3.7+ (I created this code in Python3.8).
 
 2. Create virtual environment with a tool of your choice (I used `mkvirtualenv` from the `virtualenvwrapper`).
 
